@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wegzugsbesteuerung – Schnellcheck</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: #ffffff;
+            color: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            max-width: 640px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff5f1f 0%, #e04d10 100%);
+            color: #fff;
+            padding: 32px 40px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.75;
+            line-height: 1.5;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            display: flex;
+            padding: 24px 40px 0;
+            gap: 6px;
+        }
+
+        .progress-segment {
+            flex: 1;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            transition: background 0.4s ease;
+        }
+
+        .progress-segment.active {
+            background: #ff5f1f;
+        }
+
+        .progress-segment.completed {
+            background: #16a34a;
+        }
+
+        /* Steps */
+        .form-body {
+            padding: 32px 40px 40px;
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.35s ease;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #ff5f1f;
+            margin-bottom: 8px;
+        }
+
+        .step h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        /* Form Elements */
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-option:hover {
+            border-color: #ff5f1f;
+            background: #f0f5ff;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-dot {
+            border-color: #ff5f1f;
+            background: #ff5f1f;
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-dot::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .radio-option:has(input:checked) {
+            border-color: #ff5f1f;
+            background: #f0f5ff;
+        }
+
+        .radio-dot {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .radio-label {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: #1a1a2e;
+            background: #fff;
+            transition: border-color 0.2s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .input-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23475569' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #ff5f1f;
+            box-shadow: 0 0 0 3px rgba(255, 95, 31, 0.1);
+        }
+
+        .input-group .hint {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 6px;
+        }
+
+        .input-suffix {
+            position: relative;
+        }
+
+        .input-suffix::after {
+            content: attr(data-suffix);
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .input-suffix input {
+            padding-right: 50px;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #ff5f1f;
+            color: #fff;
+            margin-left: auto;
+        }
+
+        .btn-primary:hover {
+            background: #d94a0a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 95, 31, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Knockout / Early Exit */
+        .knockout-card {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .knockout-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .knockout-card h3 {
+            font-size: 1.1rem;
+            color: #16a34a;
+            margin-bottom: 8px;
+        }
+
+        .knockout-card p {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .knockout-card.good-news {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .knockout-card.bad-news {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .knockout-card.bad-news h3 {
+            color: #dc2626;
+        }
+
+        /* Result */
+        .result-card {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .result-header {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .result-header.taxable {
+            background: linear-gradient(135deg, #fef2f2, #fff1f2);
+        }
+
+        .result-header.not-taxable {
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+        }
+
+        .result-header .icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .result-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .result-header.taxable h3 {
+            color: #dc2626;
+        }
+
+        .result-header.not-taxable h3 {
+            color: #16a34a;
+        }
+
+        .result-details {
+            padding: 20px 0;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            padding-top: 14px;
+            margin-top: 4px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .result-row .label {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .result-row .value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .result-row:last-child .value {
+            font-size: 1.15rem;
+            color: #dc2626;
+        }
+
+        .result-note {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-top: 20px;
+            font-size: 0.82rem;
+            color: #92400e;
+            line-height: 1.6;
+        }
+
+        /* Email Section */
+        .email-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid #f1f5f9;
+        }
+
+        .email-section h4 {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .email-section p {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            margin-bottom: 14px;
+        }
+
+        .email-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .email-row input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .email-row input:focus {
+            outline: none;
+            border-color: #ff5f1f;
+            box-shadow: 0 0 0 3px rgba(255, 95, 31, 0.1);
+        }
+
+        .email-sent {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #16a34a;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .email-sent.show {
+            display: flex;
+        }
+
+        /* Restart */
+        .restart-row {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .restart-row a {
+            color: #ff5f1f;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .restart-row a:hover {
+            text-decoration: underline;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            max-width: 640px;
+            width: 100%;
+            text-align: center;
+            padding: 16px 20px 0;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .header {
+                padding: 24px 24px;
+            }
+
+            .progress-bar {
+                padding: 20px 24px 0;
+            }
+
+            .form-body {
+                padding: 24px 24px 32px;
+            }
+
+            .header h1 {
+                font-size: 1.25rem;
+            }
+
+            .email-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Tabula Rasa Wegzugsbesteuerungs-Check</h1>
+        <p>Prüfe in wenigen Schritten, ob dir bei deinem Wegzug aus Deutschland die Wegzugsbesteuerung nach &sect; 6 AStG droht.</p>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="progress-segment" data-step="1"></div>
+        <div class="progress-segment" data-step="2"></div>
+        <div class="progress-segment" data-step="3"></div>
+        <div class="progress-segment" data-step="4"></div>
+        <div class="progress-segment" data-step="5"></div>
+        <div class="progress-segment" data-step="6"></div>
+    </div>
+
+    <div class="form-body">
+
+        <!-- STEP 1: Wohnsitz -->
+        <div class="step active" data-step="1">
+            <div class="step-label">Schritt 1 von 6</div>
+            <h2>Hast du aktuell deinen Wohnsitz in Deutschland?</h2>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="wohnsitz" value="ja">
+                    <span class="radio-dot"></span>
+                    <span class="radio-label">Ja, mein Wohnsitz ist in Deutschland</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="wohnsitz" value="nein">
+                    <span class="radio-dot"></span>
+                    <span class="radio-label">Nein, ich wohne nicht in Deutschland</span>
+                </label>
+            </div>
+            <div id="knockout1" style="display:none; margin-top: 24px;">
+                <div class="knockout-card good-news">
+                    <div class="icon">&#10003;</div>
+                    <h3>Gute Nachricht</h3>
+                    <p>Ohne Wohnsitz in Deutschland greift die Wegzugsbesteuerung nach &sect; 6 AStG in der Regel nicht. Du unterliegst keiner unbeschränkten Steuerpflicht in Deutschland.</p>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btn1" disabled onclick="nextStep(1)">Weiter</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Steuerpflicht -->
+        <div class="step" data-step="2">
+            <div class="step-label">Schritt 2 von 6</div>
+            <h2>Warst du innerhalb der letzten 12 Jahre mindestens 7 Jahre unbeschränkt steuerpflichtig in Deutschland?</h2>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="steuerpflicht" value="ja">
+                    <span class="radio-dot"></span>
+                    <span class="radio-label">Ja, mindestens 7 von 12 Jahren</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="steuerpflicht" value="nein">
+                    <span class="radio-dot"></span>
+                    <span class="radio-label">Nein, weniger als 7 Jahre</span>
+                </label>
+            </div>
+            <div id="knockout2" style="display:none; margin-top: 24px;">
+                <div class="knockout-card good-news">
+                    <div class="icon">&#10003;</div>
+                    <h3>Gute Nachricht</h3>
+                    <p>Da du nicht mindestens 7 der letzten 12 Jahre unbeschränkt steuerpflichtig warst, greift die Wegzugsbesteuerung nach &sect; 6 AStG voraussichtlich nicht.</p>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="prevStep(2)">Zurück</button>
+                <button class="btn btn-primary" id="btn2" disabled onclick="nextStep(2)">Weiter</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Wegzugsdatum & Rechtsform -->
+        <div class="step" data-step="3">
+            <div class="step-label">Schritt 3 von 6</div>
+            <h2>Details zu deinem Wegzug und der Beteiligung</h2>
+            <div class="input-group">
+                <label for="wegzugDatum">Wann planst du deinen Wegzug?</label>
+                <input type="date" id="wegzugDatum" required>
+            </div>
+            <div class="input-group">
+                <label for="rechtsform">Über welche Rechtsform sprechen wir bei deiner Beteiligung?</label>
+                <select id="rechtsform" required>
+                    <option value="" disabled selected>Bitte auswählen …</option>
+                    <option value="gmbh">GmbH</option>
+                    <option value="ag">AG (Aktiengesellschaft)</option>
+                    <option value="ug">UG (haftungsbeschränkt)</option>
+                    <option value="se">SE (Europäische Gesellschaft)</option>
+                    <option value="kgaa">KGaA</option>
+                    <option value="ausland">Ausländische Kapitalgesellschaft</option>
+                    <option value="sonstige">Sonstige</option>
+                </select>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="prevStep(3)">Zurück</button>
+                <button class="btn btn-primary" id="btn3" disabled onclick="nextStep(3)">Weiter</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: Beteiligung -->
+        <div class="step" data-step="4">
+            <div class="step-label">Schritt 4 von 6</div>
+            <h2>Angaben zu deiner Beteiligung</h2>
+            <div class="input-group">
+                <label for="beteiligungProzent">Mit wie viel Prozent bist du am Unternehmen beteiligt?</label>
+                <div class="input-suffix" data-suffix="%">
+                    <input type="number" id="beteiligungProzent" min="0" max="100" step="0.01" placeholder="z. B. 25">
+                </div>
+                <div class="hint">Mindestens 1 % Beteiligung ist Voraussetzung für die Wegzugsbesteuerung.</div>
+            </div>
+            <div class="input-group">
+                <label for="beteiligungSeit">Seit wann bist du beteiligt?</label>
+                <input type="date" id="beteiligungSeit">
+            </div>
+            <div id="knockout4" style="display:none; margin-top: 4px;">
+                <div class="knockout-card good-news">
+                    <div class="icon">&#10003;</div>
+                    <h3>Gute Nachricht</h3>
+                    <p>Bei einer Beteiligung von weniger als 1 % greift die Wegzugsbesteuerung nach &sect; 6 AStG nicht. Es müssen mindestens 1 % der Anteile gehalten werden.</p>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="prevStep(4)">Zurück</button>
+                <button class="btn btn-primary" id="btn4" disabled onclick="nextStep(4)">Weiter</button>
+            </div>
+        </div>
+
+        <!-- STEP 5: Werte & Steuersatz -->
+        <div class="step" data-step="5">
+            <div class="step-label">Schritt 5 von 6</div>
+            <h2>Bewertung deiner Beteiligung</h2>
+            <div class="input-group">
+                <label for="verkehrswert">Wie hoch ist der Verkehrswert deiner Beteiligung?</label>
+                <div class="input-suffix" data-suffix="EUR">
+                    <input type="number" id="verkehrswert" min="0" step="1" placeholder="z. B. 500000">
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="anschaffungskosten">Wie hoch waren die Anschaffungskosten deiner Beteiligung?</label>
+                <div class="input-suffix" data-suffix="EUR">
+                    <input type="number" id="anschaffungskosten" min="0" step="1" placeholder="z. B. 25000">
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="steuersatz">Wo liegt dein aktueller Einkommensteuersatz?</label>
+                <div class="input-suffix" data-suffix="%">
+                    <input type="number" id="steuersatz" min="0" max="45" step="0.1" placeholder="z. B. 42">
+                </div>
+                <div class="hint">Der persönliche Einkommensteuersatz liegt in Deutschland zwischen 0 % und 45 %.</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="prevStep(5)">Zurück</button>
+                <button class="btn btn-primary" id="btn5" disabled onclick="calculateResult()">Ergebnis berechnen</button>
+            </div>
+        </div>
+
+        <!-- STEP 6: Ergebnis -->
+        <div class="step" data-step="6">
+            <div class="step-label">Ergebnis</div>
+            <div class="result-card" id="resultCard">
+                <div class="result-header taxable" id="resultHeader">
+                    <div class="icon" id="resultIcon">&#9888;</div>
+                    <h3 id="resultTitle">Wegzugsbesteuerung greift</h3>
+                </div>
+                <div class="result-details" id="resultDetails">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+            <div class="result-note" id="resultNote">
+                <strong>Hinweis:</strong> Diese Berechnung dient nur der groben Orientierung. Die tatsächliche Steuerlast kann durch Teileinkünfteverfahren (60 %), Freibeträge, DBA-Regelungen und Stundungsmöglichkeiten abweichen. Bitte ziehe einen Steuerberater hinzu.
+            </div>
+
+            <div class="email-section">
+                <h4>Ergebnis per E-Mail erhalten</h4>
+                <p>Trage deine E-Mail-Adresse ein und wir senden dir das Ergebnis zu.</p>
+                <div class="email-row">
+                    <input type="email" id="emailInput" placeholder="deine@email.de">
+                    <button class="btn btn-primary" onclick="sendEmail()">Senden</button>
+                </div>
+                <div class="email-sent" id="emailSent">
+                    &#10003; Ergebnis wurde versendet (Demo)
+                </div>
+            </div>
+
+            <div class="restart-row">
+                <a onclick="restart()">Neue Berechnung starten</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="disclaimer">
+    Dieses Tool ersetzt keine steuerliche Beratung. Alle Angaben ohne Gewähr. Tabula Rasa Life LLC, 2026
+</div>
+
+<script>
+    let currentStep = 1;
+    const totalSteps = 6;
+
+    // ---- Navigation ----
+    function updateProgress() {
+        document.querySelectorAll('.progress-segment').forEach(seg => {
+            const step = parseInt(seg.dataset.step);
+            seg.classList.remove('active', 'completed');
+            if (step < currentStep) seg.classList.add('completed');
+            if (step === currentStep) seg.classList.add('active');
+        });
+    }
+
+    function showStep(step) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+        currentStep = step;
+        updateProgress();
+    }
+
+    function nextStep(from) {
+        // Knockout checks
+        if (from === 1) {
+            const val = document.querySelector('input[name="wohnsitz"]:checked')?.value;
+            if (val === 'nein') return; // blocked by knockout
+        }
+        if (from === 2) {
+            const val = document.querySelector('input[name="steuerpflicht"]:checked')?.value;
+            if (val === 'nein') return;
+        }
+        if (from === 4) {
+            const pct = parseFloat(document.getElementById('beteiligungProzent').value);
+            if (pct < 1) return;
+        }
+        showStep(from + 1);
+    }
+
+    function prevStep(from) {
+        showStep(from - 1);
+    }
+
+    function restart() {
+        // Reset all inputs
+        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+        document.querySelectorAll('input[type="number"], input[type="date"], input[type="email"]').forEach(i => i.value = '');
+        document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+        document.querySelectorAll('.knockout-card').forEach(k => k.parentElement.style.display = 'none');
+        document.querySelectorAll('.btn-primary').forEach(b => b.disabled = true);
+        document.getElementById('emailSent').classList.remove('show');
+        showStep(1);
+    }
+
+    // ---- Validation ----
+
+    // Step 1
+    document.querySelectorAll('input[name="wohnsitz"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const btn = document.getElementById('btn1');
+            const knockout = document.getElementById('knockout1');
+            if (this.value === 'nein') {
+                knockout.style.display = 'block';
+                btn.disabled = true;
+            } else {
+                knockout.style.display = 'none';
+                btn.disabled = false;
+            }
+        });
+    });
+
+    // Step 2
+    document.querySelectorAll('input[name="steuerpflicht"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const btn = document.getElementById('btn2');
+            const knockout = document.getElementById('knockout2');
+            if (this.value === 'nein') {
+                knockout.style.display = 'block';
+                btn.disabled = true;
+            } else {
+                knockout.style.display = 'none';
+                btn.disabled = false;
+            }
+        });
+    });
+
+    // Step 3
+    function validateStep3() {
+        const datum = document.getElementById('wegzugDatum').value;
+        const rechtsform = document.getElementById('rechtsform').value;
+        document.getElementById('btn3').disabled = !(datum && rechtsform);
+    }
+    document.getElementById('wegzugDatum').addEventListener('change', validateStep3);
+    document.getElementById('rechtsform').addEventListener('change', validateStep3);
+
+    // Step 4
+    function validateStep4() {
+        const pct = document.getElementById('beteiligungProzent').value;
+        const seit = document.getElementById('beteiligungSeit').value;
+        const knockout = document.getElementById('knockout4');
+        const btn = document.getElementById('btn4');
+
+        if (pct !== '' && parseFloat(pct) < 1) {
+            knockout.style.display = 'block';
+            btn.disabled = true;
+        } else {
+            knockout.style.display = 'none';
+            btn.disabled = !(pct && seit && parseFloat(pct) >= 1);
+        }
+    }
+    document.getElementById('beteiligungProzent').addEventListener('input', validateStep4);
+    document.getElementById('beteiligungSeit').addEventListener('change', validateStep4);
+
+    // Step 5
+    function validateStep5() {
+        const vw = document.getElementById('verkehrswert').value;
+        const ak = document.getElementById('anschaffungskosten').value;
+        const st = document.getElementById('steuersatz').value;
+        document.getElementById('btn5').disabled = !(vw && ak && st);
+    }
+    document.getElementById('verkehrswert').addEventListener('input', validateStep5);
+    document.getElementById('anschaffungskosten').addEventListener('input', validateStep5);
+    document.getElementById('steuersatz').addEventListener('input', validateStep5);
+
+    // ---- Calculation ----
+    function formatEUR(num) {
+        return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
+    }
+
+    function calculateResult() {
+        const verkehrswert = parseFloat(document.getElementById('verkehrswert').value);
+        const anschaffungskosten = parseFloat(document.getElementById('anschaffungskosten').value);
+        const steuersatz = parseFloat(document.getElementById('steuersatz').value) / 100;
+        const beteiligung = parseFloat(document.getElementById('beteiligungProzent').value);
+
+        const gewinn = verkehrswert - anschaffungskosten;
+        // Teileinkünfteverfahren: 60% des Gewinns steuerpflichtig
+        const steuerpflichtigerGewinn = gewinn * 0.6;
+        const steuer = Math.max(0, steuerpflichtigerGewinn * steuersatz);
+
+        const header = document.getElementById('resultHeader');
+        const icon = document.getElementById('resultIcon');
+        const title = document.getElementById('resultTitle');
+        const details = document.getElementById('resultDetails');
+
+        if (gewinn <= 0) {
+            header.className = 'result-header not-taxable';
+            icon.innerHTML = '&#10003;';
+            title.textContent = 'Keine Wegzugssteuer fällig';
+            details.innerHTML = `
+                <div class="result-row"><span class="label">Verkehrswert</span><span class="value">${formatEUR(verkehrswert)}</span></div>
+                <div class="result-row"><span class="label">Anschaffungskosten</span><span class="value">${formatEUR(anschaffungskosten)}</span></div>
+                <div class="result-row"><span class="label">Fiktiver Veräußerungsgewinn</span><span class="value">${formatEUR(gewinn)}</span></div>
+            `;
+            document.getElementById('resultNote').innerHTML = '<strong>Ergebnis:</strong> Da kein fiktiver Veräußerungsgewinn vorliegt (Verkehrswert ≤ Anschaffungskosten), entsteht keine Wegzugssteuer.';
+        } else {
+            header.className = 'result-header taxable';
+            icon.innerHTML = '&#9888;';
+            title.textContent = 'Wegzugsbesteuerung greift';
+            details.innerHTML = `
+                <div class="result-row"><span class="label">Verkehrswert der Beteiligung</span><span class="value">${formatEUR(verkehrswert)}</span></div>
+                <div class="result-row"><span class="label">Anschaffungskosten</span><span class="value">${formatEUR(anschaffungskosten)}</span></div>
+                <div class="result-row"><span class="label">Fiktiver Veräußerungsgewinn</span><span class="value">${formatEUR(gewinn)}</span></div>
+                <div class="result-row"><span class="label">Steuerpflichtig (60 % TEV)</span><span class="value">${formatEUR(steuerpflichtigerGewinn)}</span></div>
+                <div class="result-row"><span class="label">Persönlicher Steuersatz</span><span class="value">${(steuersatz * 100).toFixed(1)} %</span></div>
+                <div class="result-row"><span class="label">Geschätzte Wegzugssteuer</span><span class="value">${formatEUR(steuer)}</span></div>
+            `;
+            document.getElementById('resultNote').innerHTML = `<strong>Hinweis:</strong> Die Berechnung basiert auf dem Teileinkünfteverfahren (60 % steuerpflichtig). Die tatsächliche Steuerlast kann durch Freibeträge, Solidaritätszuschlag, Kirchensteuer, DBA-Regelungen und mögliche Stundung (bei Wegzug in EU/EWR-Staaten) abweichen. Bitte ziehe einen Steuerberater hinzu.`;
+        }
+
+        showStep(6);
+    }
+
+    // ---- Email (Demo) ----
+    function sendEmail() {
+        const email = document.getElementById('emailInput').value;
+        if (email && email.includes('@')) {
+            document.getElementById('emailSent').classList.add('show');
+        }
+    }
+
+    // Init
+    updateProgress();
+</script>
+
+</body>
+</html>
