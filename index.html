@@ -837,6 +837,12 @@
         const steuersatz = parseFloat(document.getElementById('steuersatz').value) / 100;
         const beteiligung = parseFloat(document.getElementById('beteiligungProzent').value);
 
+        // § 17 Abs. 1 EStG: Beteiligung muss innerhalb der letzten 5 Jahre vor Wegzug bestanden haben
+        const wegzugDatum = new Date(document.getElementById('wegzugDatum').value);
+        const beteiligungSeit = new Date(document.getElementById('beteiligungSeit').value);
+        const haltedauerMs = wegzugDatum - beteiligungSeit;
+        const haltedauerJahre = haltedauerMs / (1000 * 60 * 60 * 24 * 365.25);
+
         const gewinn = verkehrswert - anschaffungskosten;
         // Teileinkünfteverfahren: 60% des Gewinns steuerpflichtig
         const steuerpflichtigerGewinn = gewinn * 0.6;
@@ -849,7 +855,19 @@
 
         const cta = document.getElementById('ctaSection');
 
-        if (gewinn <= 0) {
+        if (haltedauerJahre < 5) {
+            // Keine Beteiligung i.S.d. § 17 Abs. 1 EStG → keine Wegzugsbesteuerung
+            header.className = 'result-header not-taxable';
+            icon.innerHTML = '&#10003;';
+            title.textContent = 'Keine Wegzugssteuer fällig';
+            details.innerHTML = `
+                <div class="result-row"><span class="label">Beteiligung seit</span><span class="value">${beteiligungSeit.toLocaleDateString('de-DE')}</span></div>
+                <div class="result-row"><span class="label">Geplanter Wegzug</span><span class="value">${wegzugDatum.toLocaleDateString('de-DE')}</span></div>
+                <div class="result-row"><span class="label">Haltedauer</span><span class="value">${haltedauerJahre.toFixed(1)} Jahre</span></div>
+            `;
+            document.getElementById('resultNote').innerHTML = '<strong>Ergebnis:</strong> Deine Beteiligung besteht weniger als 5 Jahre vor dem geplanten Wegzug. Damit liegt keine Beteiligung i.&thinsp;S.&thinsp;d. &sect; 17 Abs. 1 EStG vor und die Wegzugsbesteuerung nach &sect; 6 AStG greift nicht.';
+            cta.style.display = 'none';
+        } else if (gewinn <= 0) {
             header.className = 'result-header not-taxable';
             icon.innerHTML = '&#10003;';
             title.textContent = 'Keine Wegzugssteuer fällig';
